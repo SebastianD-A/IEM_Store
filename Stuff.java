@@ -1,5 +1,5 @@
 package IEM_Store;
 
-public class Store {
+public class Stuff {
     
 }
