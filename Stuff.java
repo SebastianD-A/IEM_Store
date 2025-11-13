@@ -8,6 +8,7 @@ public class Stuff{
         InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, new Driver[]{Driver.BA_DD_HYBRID}, "Moondrop", SoundSignature.NEUTRAL);
         InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, new Driver[]{Driver.TRIBID}, "TruthEar", SoundSignature.WARM_NEUTRAL);
         InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99, new Driver[]{Driver.PLANAR}, "7Hz", SoundSignature.BRIGHT);
+        
         CarryBag bag1 = new CarryBag("DDHifi C2023", 59.99, "DDHifi", 10, 8, 5);
         CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
         CarryBag bag3 = new CarryBag("Dunu Pouch", 29.99, "Dunu", 8, 6, 4);
@@ -19,7 +20,7 @@ public class Stuff{
         a.addproduct(bag2, 30);
         a.addproduct(bag3, 25);
 
-        boolean running = true;
+        System.out.println("");
     }
 }
 
@@ -388,6 +389,10 @@ class Store{
 
         System.out.println(remove.getName() + " has been removed");
         stock.remove(remove);    
+    }
+
+    public int getStock(Product item){
+        return stock.get(item);
     }
 
     public void sellProduct(String name, int quantity){
