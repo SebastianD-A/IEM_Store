@@ -6,7 +6,7 @@ public class Stuff{
         Store a = new Store();
 
         InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, new Driver[]{Driver.BA_DD_HYBRID}, "Moondrop", SoundSignature.NEUTRAL);
-        InEarMonitor iem2 = new InEarMonitor("Thieaudio Monarch MKII", 999.99, new Driver[]{Driver.TRIBID}, "Thieaudio", SoundSignature.WARM_NEUTRAL);
+        InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, new Driver[]{Driver.TRIBID}, "TruthEar", SoundSignature.WARM_NEUTRAL);
         InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99, new Driver[]{Driver.PLANAR}, "7Hz", SoundSignature.BRIGHT);
         CarryBag bag1 = new CarryBag("DDHifi C2023", 59.99, "DDHifi", 10, 8, 5);
         CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
@@ -19,23 +19,7 @@ public class Stuff{
         a.addproduct(bag2, 30);
         a.addproduct(bag3, 25);
 
-        System.out.println("\nsort price:");
-        for (Product p : a.sortByPrice()) {
-            System.out.println(p);
-            System.out.println();
-        }
-
-        System.out.println("\nsort brand:");
-        for (Product p : a.sortByBrand()) {
-            System.out.println(p);
-            System.out.println();
-        }
-
-        System.out.println("\nsort DDHifi");
-        for (Product p : a.sortByBrand("DDHifi")) {
-            System.out.println(p);
-            System.out.println();
-        }
+        boolean running = true;
     }
 }
 
@@ -49,6 +33,7 @@ enum Driver{
     TRIBID,
     QUADBRID,
 }
+
 enum SoundSignature{
     NEUTRAL,
     BASSY,
@@ -57,6 +42,7 @@ enum SoundSignature{
     V_SHAPE,
     WARM_NEUTRAL,
 }
+
 enum ShippingStatus{
     PENDING, 
     SHIPPED, 
@@ -101,9 +87,9 @@ abstract class Product implements Sellable{
     static final Comparator<Product> brandComparator = Comparator.comparing(Product::getBrand);
 
     Product(String name, double price, String brand){
-        this.price=price;
-        this.name=name;
-        this.brand=brand;
+        this.price = price;
+        this.name = name;
+        this.brand = brand;
     }
 
     @Override
@@ -140,10 +126,10 @@ class InEarMonitor extends Product{
     }
 
     String getDrivers(){
-        String listOfDrivers ="";
+        String listOfDrivers = "";
         for (Driver driver : drivers){
-            listOfDrivers+=driver;
-            listOfDrivers+=", ";
+            listOfDrivers += driver;
+            listOfDrivers += ", ";
         }
         return listOfDrivers;
         }
@@ -233,8 +219,8 @@ class Customer{
             System.out.println(name + " got no orders");
             return;
         }
-        for (Order o : orders) {
-            System.out.println("Order #" + o.getOrderID() + " | Status: " + o.getStatus());
+        for (Order order : orders) {
+            System.out.println("Order #" + order.getOrderID() + " | Status: " + order.getStatus());
         }
     }
     
@@ -248,7 +234,6 @@ class Customer{
 }
 
 class Order implements Discountable{
-    private static int lastID = 0;
     private final int orderID;
 
     private Customer cust;
@@ -257,9 +242,9 @@ class Order implements Discountable{
 
     private ShippingStatus status = ShippingStatus.PENDING;
 
-    Order(Customer cust){
+    Order(Customer cust, int orderID){
         this.cust = cust;
-        this.orderID = lastID++;
+        this.orderID = orderID;
     }
 
     public void addProduct(Product newProduct){
@@ -288,7 +273,7 @@ class Order implements Discountable{
     public String getCart(){
         String listOfItems="";
 
-        for (Product a:cart){
+        for (Product a : cart){
             listOfItems += a.getName() + ", ";
         }
         return listOfItems;
@@ -319,8 +304,8 @@ class Order implements Discountable{
 
     public double getTotal(){
         double total = 0;
-        for (Product p : cart){
-            total += p.getPrice();
+        for (Product product : cart){
+            total += product.getPrice();
         }
         return total;
     }
@@ -329,8 +314,8 @@ class Order implements Discountable{
     public double applyDiscount(double percentage) {
         double total = 0;
 
-        for (Product p : cart) {
-            total += p.getPrice();
+        for (Product product : cart) {
+            total += product.getPrice();
         }
 
         double totalDiscount = percentage + cust.getRank().getPercentage();
@@ -347,14 +332,14 @@ class Order implements Discountable{
     public double applyDiscount(int setAmount, CustomerRank rank){
         double total = 0;
 
-        for (Product p : cart) {
-            total += p.getPrice();
+        for (Product product : cart) {
+            total += product.getPrice();
         }
 
         double discount = setAmount + (total * rank.getPercentage() / 100);
         total -= discount;
 
-        if (total<0){
+        if (total < 0){
             total = 0;
         }
         
@@ -375,7 +360,7 @@ class Store{
     HashMap<Product, Integer> stock = new HashMap<>();
 
     public void addproduct(Product newProduct, int quantity){
-        if (quantity <=0){
+        if (quantity <= 0){
             System.out.println("Stock must be atleast 1");
             return ;
         }
@@ -385,9 +370,9 @@ class Store{
     }
 
     public Product getProductFromName(String name){
-        for (Product a: stock.keySet()){
-            if (a.getName().equalsIgnoreCase(name)){
-                return a;
+        for (Product product : stock.keySet()){
+            if (product.getName().equalsIgnoreCase(name)){
+                return product;
             }
         }
 
@@ -408,7 +393,7 @@ class Store{
     public void sellProduct(String name, int quantity){
         Product sold = getProductFromName(name);
 
-        if (quantity<=0 || quantity> stock.get(sold)){
+        if (quantity <= 0 || quantity > stock.get(sold)){
             System.out.println("Invalid Quantity");
             return;
         }
@@ -440,9 +425,9 @@ class Store{
     public ArrayList<Product> sortByBrand(String brandName){
         ArrayList<Product> sorted = new ArrayList<>();
 
-        for (Product p:stock.keySet()){
-            if (p.getBrand().equalsIgnoreCase(brandName)){
-                sorted.add(p);
+        for (Product product:stock.keySet()){
+            if (product.getBrand().equalsIgnoreCase(brandName)){
+                sorted.add(product);
             }
         }
         
@@ -454,9 +439,9 @@ class Store{
     public ArrayList<InEarMonitor> sortBySoundSignature(){
         ArrayList<InEarMonitor> sorted = new ArrayList<>();
         
-        for (Product p:stock.keySet()){
-            if (p instanceof InEarMonitor){
-                sorted.add((InEarMonitor)p);
+        for (Product product:stock.keySet()){
+            if (product instanceof InEarMonitor){
+                sorted.add((InEarMonitor)product);
             }
         }
 
@@ -467,9 +452,9 @@ class Store{
     public ArrayList<InEarMonitor> sortBySoundSignature(SoundSignature sound){
         ArrayList<InEarMonitor> sorted = new ArrayList<>();
 
-        for (Product p:stock.keySet()){
-            if (p instanceof InEarMonitor && ((InEarMonitor) p).getSound() == sound){
-                sorted.add((InEarMonitor) p);
+        for (Product product : stock.keySet()){
+            if (product instanceof InEarMonitor && ((InEarMonitor) product).getSound() == sound){
+                sorted.add((InEarMonitor) product);
             }
         }
 
@@ -480,13 +465,27 @@ class Store{
     public ArrayList<CarryBag> sortByVolume(){
         ArrayList<CarryBag> sorted = new ArrayList<>();
 
-        for (Product p:stock.keySet()){
-            if (p instanceof CarryBag){
-                sorted.add((CarryBag) p);
+        for (Product product : stock.keySet()){
+            if (product instanceof CarryBag){
+                sorted.add((CarryBag) product);
             }
         }
 
         Collections.sort(sorted, CarryBag.volumeComparator);
         return sorted;
+    }
+
+    @Override
+    public String toString(){
+        String output = "";
+        
+        for (Map.Entry<Product, Integer> product: stock.entrySet()){
+            Product item = product.getKey();
+            int quantity = product.getValue();
+
+            output += item.getName() + " | Stock: " + quantity + "\n";
+        }
+        
+        return output;
     }
 }
