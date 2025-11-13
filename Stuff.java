@@ -1,5 +1,44 @@
 package IEM_Store;
 import java.util.*;
+
+public class Stuff{
+    public static void main(String[] args){
+        Store a = new Store();
+
+        InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, new Driver[]{Driver.BA_DD_HYBRID}, "Moondrop", SoundSignature.NEUTRAL);
+        InEarMonitor iem2 = new InEarMonitor("Thieaudio Monarch MKII", 999.99, new Driver[]{Driver.TRIBID}, "Thieaudio", SoundSignature.WARM_NEUTRAL);
+        InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99, new Driver[]{Driver.PLANAR}, "7Hz", SoundSignature.BRIGHT);
+        CarryBag bag1 = new CarryBag("DDHifi C2023", 59.99, "DDHifi", 10, 8, 5);
+        CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
+        CarryBag bag3 = new CarryBag("Dunu Pouch", 29.99, "Dunu", 8, 6, 4);
+
+        a.addproduct(iem1, 10);
+        a.addproduct(iem2, 5);
+        a.addproduct(iem3, 15);
+        a.addproduct(bag1, 20);
+        a.addproduct(bag2, 30);
+        a.addproduct(bag3, 25);
+
+        System.out.println("\nsort price:");
+        for (Product p : a.sortByPrice()) {
+            System.out.println(p);
+            System.out.println();
+        }
+
+        System.out.println("\nsort brand:");
+        for (Product p : a.sortByBrand()) {
+            System.out.println(p);
+            System.out.println();
+        }
+
+        System.out.println("\nsort DDHifi");
+        for (Product p : a.sortByBrand("DDHifi")) {
+            System.out.println(p);
+            System.out.println();
+        }
+    }
+}
+
 //enums
 enum Driver{
     DYNAMIC,
@@ -91,7 +130,7 @@ class InEarMonitor extends Product{
     private Driver[] drivers;
     private SoundSignature soundSignature;
 
-    //comparators
+    //compare
     static final Comparator<InEarMonitor> soundSignatureComparator = Comparator.comparing(InEarMonitor::getSound);
 
     InEarMonitor(String name, double price, Driver[] drivers, String brand, SoundSignature soundSignature){
@@ -368,10 +407,86 @@ class Store{
 
     public void sellProduct(String name, int quantity){
         Product sold = getProductFromName(name);
+
+        if (quantity<=0 || quantity> stock.get(sold)){
+            System.out.println("Invalid Quantity");
+            return;
+        }
+
+        else if (sold == null){
+            System.out.println("Item Not found");
+            return;
+        }
+
         int newQuantity = stock.get(sold) - quantity;
 
         stock.put(sold, newQuantity);
     }
 
+    public ArrayList<Product> sortByPrice(){
+        ArrayList<Product> products = new ArrayList<>(stock.keySet());
+        Collections.sort(products, Product.priceComparator);
 
+        return products;
+    }
+
+    public ArrayList<Product> sortByBrand(){
+        ArrayList<Product> products = new ArrayList<>(stock.keySet());
+        Collections.sort(products, Product.brandComparator);
+        
+        return products;
+    }
+
+    public ArrayList<Product> sortByBrand(String brandName){
+        ArrayList<Product> sorted = new ArrayList<>();
+
+        for (Product p:stock.keySet()){
+            if (p.getBrand().equalsIgnoreCase(brandName)){
+                sorted.add(p);
+            }
+        }
+        
+        Collections.sort(sorted, Product.brandComparator);
+
+        return sorted;
+    }
+
+    public ArrayList<InEarMonitor> sortBySoundSignature(){
+        ArrayList<InEarMonitor> sorted = new ArrayList<>();
+        
+        for (Product p:stock.keySet()){
+            if (p instanceof InEarMonitor){
+                sorted.add((InEarMonitor)p);
+            }
+        }
+
+        Collections.sort(sorted, InEarMonitor.soundSignatureComparator);
+        return sorted;
+    }
+
+    public ArrayList<InEarMonitor> sortBySoundSignature(SoundSignature sound){
+        ArrayList<InEarMonitor> sorted = new ArrayList<>();
+
+        for (Product p:stock.keySet()){
+            if (p instanceof InEarMonitor && ((InEarMonitor) p).getSound() == sound){
+                sorted.add((InEarMonitor) p);
+            }
+        }
+
+        Collections.sort(sorted, Product.priceComparator);
+        return sorted;
+    }
+    
+    public ArrayList<CarryBag> sortByVolume(){
+        ArrayList<CarryBag> sorted = new ArrayList<>();
+
+        for (Product p:stock.keySet()){
+            if (p instanceof CarryBag){
+                sorted.add((CarryBag) p);
+            }
+        }
+
+        Collections.sort(sorted, CarryBag.volumeComparator);
+        return sorted;
+    }
 }
