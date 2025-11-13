@@ -48,7 +48,7 @@ interface Sellable{
 }
 
 interface Discountable{
-    double applyDiscount(double percentage, CustomerRank rank);
+    double applyDiscount(double percentage);
 }
 
 //classes
@@ -130,9 +130,9 @@ class CarryBag extends Product{
 
     CarryBag(String name, double price, String brand, double length, double width, double height){
         super(name, price, brand);
-        this.length=length;
-        this.width=width;
-        this.height=height;
+        this.length = length;
+        this.width = width;
+        this.height = height;
     }
 
     public double getVolume(){
@@ -219,12 +219,12 @@ class Order implements Discountable{
     private ShippingStatus status = ShippingStatus.PENDING;
 
     Order(Customer cust){
-        this.cust=cust;
+        this.cust = cust;
         this.orderID = lastID++;
     }
 
-    public void addProduct(Product newItem){
-        cart.add(newItem);
+    public void addProduct(Product newProduct){
+        cart.add(newProduct);
     }
 
     public void removeProduct(int productIndex) {
@@ -265,6 +265,7 @@ class Order implements Discountable{
             System.out.println((i + 1) + ". " + cart.get(i));
         }
     }
+
     public void setStatus(ShippingStatus newStatus){
         status = newStatus;
     }
@@ -280,19 +281,20 @@ class Order implements Discountable{
     public double getTotal(){
         double total = 0;
         for (Product p : cart){
-            total+=p.getPrice();
+            total += p.getPrice();
         }
         return total;
     }
 
-    public double applyDiscount(double percentage, CustomerRank rank) {
+    @Override
+    public double applyDiscount(double percentage) {
         double total = 0;
 
         for (Product p : cart) {
             total += p.getPrice();
         }
 
-        double totalDiscount = percentage + rank.getPercentage();
+        double totalDiscount = percentage + cust.getRank().getPercentage();
         if (totalDiscount > 100) {
             totalDiscount = 100;
         }
@@ -301,6 +303,23 @@ class Order implements Discountable{
         }
 
         return total - (total * totalDiscount / 100);
+    }
+
+    public double applyDiscount(int setAmount, CustomerRank rank){
+        double total = 0;
+
+        for (Product p : cart) {
+            total += p.getPrice();
+        }
+
+        double discount = setAmount + (total * rank.getPercentage() / 100);
+        total -= discount;
+
+        if (total<0){
+            total = 0;
+        }
+        
+        return total;
     }
 
     @Override
@@ -314,6 +333,45 @@ class Order implements Discountable{
 }
 
 class Store{
-    Product[] stock;
-    
+    HashMap<Product, Integer> stock = new HashMap<>();
+
+    public void addproduct(Product newProduct, int quantity){
+        if (quantity <=0){
+            System.out.println("Stock must be atleast 1");
+            return ;
+        }
+
+        stock.put(newProduct, quantity);
+        System.out.println("Product added: " + newProduct.getName() + " | Quantity: " + quantity);
+    }
+
+    public Product getProductFromName(String name){
+        for (Product a: stock.keySet()){
+            if (a.getName().equalsIgnoreCase(name)){
+                return a;
+            }
+        }
+
+        return null;
+    }
+
+    public void removeProduct(String name){
+        Product remove = getProductFromName(name);
+        if (remove == null){
+            System.out.println("Product not found");
+            return;
+        }
+
+        System.out.println(remove.getName() + " has been removed");
+        stock.remove(remove);    
+    }
+
+    public void sellProduct(String name, int quantity){
+        Product sold = getProductFromName(name);
+        int newQuantity = stock.get(sold) - quantity;
+
+        stock.put(sold, newQuantity);
+    }
+
+
 }
