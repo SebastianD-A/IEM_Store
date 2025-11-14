@@ -3,24 +3,182 @@ import java.util.*;
 
 public class Stuff{
     public static void main(String[] args){
-        Store a = new Store();
+        Store iemStore = new Store();
 
-        InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, new Driver[]{Driver.BA_DD_HYBRID}, "Moondrop", SoundSignature.NEUTRAL);
-        InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, new Driver[]{Driver.TRIBID}, "TruthEar", SoundSignature.WARM_NEUTRAL);
-        InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99, new Driver[]{Driver.PLANAR}, "7Hz", SoundSignature.BRIGHT);
+        InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, new Driver[]{Driver.BA_DD_HYBRID, Driver.BA}, "Moondrop", SoundSignature.NEUTRAL);
+        InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, new Driver[]{Driver.TRIBID, Driver.BA_DD_HYBRID}, "TruthEar", SoundSignature.WARM_NEUTRAL);
+        InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99, new Driver[]{Driver.PLANAR, Driver.DYNAMIC}, "7Hz", SoundSignature.BRIGHT);
         
-        CarryBag bag1 = new CarryBag("DDHifi C2023", 59.99, "DDHifi", 10, 8, 5);
+        CarryBag bag1 = new CarryBag("MoonDrop C2023", 59.99, "Moondrop", 10, 8, 5);
         CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
         CarryBag bag3 = new CarryBag("Dunu Pouch", 29.99, "Dunu", 8, 6, 4);
 
-        a.addproduct(iem1, 10);
-        a.addproduct(iem2, 5);
-        a.addproduct(iem3, 15);
-        a.addproduct(bag1, 20);
-        a.addproduct(bag2, 30);
-        a.addproduct(bag3, 25);
+        iemStore.addproduct(iem1, 10);
+        iemStore.addproduct(iem2, 5);
+        iemStore.addproduct(iem3, 15);
+        iemStore.addproduct(bag1, 20);
+        iemStore.addproduct(bag2, 30);
+        iemStore.addproduct(bag3, 25);
 
-        System.out.println("");
+        int orderIDCounter = 0;
+
+        System.out.println("Name: ");
+        String custName = In.nextLine();
+
+        CustomerRank[] ranks = CustomerRank.values();
+
+        for (int i = 0; i < ranks.length; i++) {
+            System.out.println((i + 1) + ". " + ranks[i]);
+        }
+
+        int rank = In.nextInt();
+        CustomerRank custRank = CustomerRank.values()[rank-1];
+
+        switch (rank){
+            case 1:
+                custRank = CustomerRank.NONE;
+                break;
+            case 2:
+                custRank = CustomerRank.BASIC;
+                break;
+            case 3:
+                custRank = CustomerRank.PREMIUM;
+                break;
+            case 4:
+                custRank = CustomerRank.AUDIOPHILE;
+                break;
+            default:
+            custRank = CustomerRank.NONE;
+        }
+
+        Customer customer = new Customer(custName, custRank);
+        Order currentOrder = new Order(customer, orderIDCounter);
+        orderIDCounter++;
+
+        System.out.println("Hello " + customer.getName() + ", Welcome into the IEM store");
+
+        boolean running = true;
+        int user;
+
+        while (running){
+            System.out.println("Main menu (Order #" + currentOrder.getOrderID() + ")");
+            System.out.println("""
+1. Browse Product
+2. Add item
+3. Manage cart
+4. Checkout
+5. Profile details and Order history
+6. Exit
+7. Inventory (staff only)
+Choice:""");
+            user = In.nextInt();
+
+            switch (user){
+                case 1:
+                    System.out.println("""
+Browse Menu:
+1. Show All products
+2. Show All IEMs, sorted by sound signature
+3. Filter IEMs by specific Sound Signature
+4. Show All products (Sorted by Brand)
+5. Filter Products by specific Brand
+6. Show Carry Bags (Sorted by Volume)
+Choice:""");
+            
+                    user=In.nextInt();
+                    
+                    switch (user){
+                        case 1:
+                            System.out.println("All Products:");
+
+                            for (Product item : iemStore.getStock().keySet()){
+                                System.out.println(item + "\nIn Stock: " + iemStore.getQuantity(item));
+                                System.out.println();
+                            }
+                            break;
+                        case 2:
+                            ArrayList<InEarMonitor> iemsBroadSignature = iemStore.sortBySoundSignature();
+
+                            for (InEarMonitor iem : iemsBroadSignature){
+                                System.out.println(iem + "\nIn Stock: " + iemStore.getQuantity(iem));
+                                System.out.println();
+                            }
+                            break;
+                        case 3:
+                            System.out.println("Which sound Signature");
+                            
+                            for (int i = 1; i < (SoundSignature.values()).length + 1; i++){
+                                System.out.println(i + ". " + SoundSignature.values()[i-1]);
+                            }
+                            user = In.nextInt();
+                            ArrayList<InEarMonitor> iemsSpecificSignature = iemStore.sortBySoundSignature(SoundSignature.values()[user]);
+
+                            for (InEarMonitor iem : iemsSpecificSignature){
+                                System.out.println(iem + "\nIn Stock: " + iemStore.getQuantity(iem));
+                                System.out.println();
+                            }
+                            break;
+                        case 4:
+                            ArrayList<Product> itemBroadBrand = iemStore.sortByBrand();
+
+                            for (Product item : itemBroadBrand){
+                                System.out.println(item + "\nStock: " + iemStore.getQuantity(item));
+                                System.out.println();
+                            }
+
+                            break;
+                        case 5:
+                            ArrayList<String> brandList = new ArrayList<>();
+
+                                for (Product item : iemStore.getStock().keySet()) {
+                                    String brand = item.getBrand();
+                                    boolean exists = false;
+
+                                    for (String b : brandList) {
+                                        if (b.equalsIgnoreCase(brand)) {
+                                            exists = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!exists) {
+                                        brandList.add(brand);
+                                    }
+                                }
+
+                                System.out.println("Select Brand:");
+                                for (int i = 0; i < brandList.size(); i++) {
+                                    System.out.println((i + 1) + ". " + brandList.get(i));
+                                }
+
+                                user = In.nextInt();
+                                String selectedBrand = brandList.get(user - 1);
+
+                                ArrayList<Product> filteredProducts = iemStore.sortByBrand(selectedBrand);
+
+                                for (Product item : filteredProducts) {
+                                    System.out.println(item + "\nStock: " + iemStore.getQuantity(item));
+                                    System.out.println();
+                                }
+
+                                break;
+                        case 6:
+                            ArrayList<CarryBag> sortedBags = iemStore.sortByVolume();
+
+                            for (CarryBag bag : sortedBags) {
+                                System.out.println(bag + "\nStock: " + iemStore.getQuantity(bag));
+                                System.out.println();
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                    
+                    case 2:
+                        
+            }
+        }
+
     }
 }
 
@@ -144,7 +302,7 @@ class InEarMonitor extends Product{
         return super.toString() + 
         "\nSound Signatures: " + 
         this.soundSignature + 
-        "Drivers: "+ getDrivers();
+        "\nDrivers: "+ getDrivers();
     }
 }
 
@@ -167,11 +325,7 @@ class CarryBag extends Product{
 
     @Override
     public String toString(){
-    return super.toString() +
-           "\nLength: " + this.length + '\n' +
-           "Width: " + this.width + '\n' +
-           "Height: " + this.height + '\n' +
-           "Volume: " + getVolume();
+    return super.toString() + "\nLength: " + this.length + '\n' + "Width: " + this.width + '\n' + "Height: " + this.height + '\n' + "Volume: " + getVolume();
     }
 }
 
@@ -189,22 +343,6 @@ class Customer{
 
     public void addOrder(Order newOrder){
         orders.add(newOrder);
-    }
-
-    public void removeOrder(int index) {
-        if (orders.isEmpty()) {
-            System.out.println("No orders to remove.");
-            return;
-        }
-
-        if (index < 0 || index >= orders.size()) {
-            System.out.println("Invalid order index.");
-            return;
-        }
-
-        Order removed = orders.remove(index);
-
-        System.out.println("Removed Order #" + removed.getOrderID() + " for " + name);
     }
 
     public CustomerRank getRank(){
@@ -227,9 +365,7 @@ class Customer{
     
     @Override
     public String toString(){
-        return "Customer: " + name +
-                "\nRank: " + rank +
-                "\nOrders: " + orders.size();
+        return "Customer: " + name + "\nRank: " + rank + "\nOrders: " + orders.size();
     }
 
 }
@@ -349,16 +485,12 @@ class Order implements Discountable{
 
     @Override
     public String toString() {
-        return "Order ID: " + orderID +
-               "\nCustomer: " + cust.getName() +
-               "\nStatus: " + status +
-               "\nItems: " + cart.size() +
-               "\nTotal: $" + getTotal();
+        return "Order ID: " + orderID + "\nCustomer: " + cust.getName() + "\nStatus: " + status + "\nItems: " + cart.size() + "\nTotal: $" + getTotal();
     }
 }
 
 class Store{
-    HashMap<Product, Integer> stock = new HashMap<>();
+    private HashMap<Product, Integer> stock = new HashMap<>();
 
     public void addproduct(Product newProduct, int quantity){
         if (quantity <= 0){
@@ -391,8 +523,15 @@ class Store{
         stock.remove(remove);    
     }
 
-    public int getStock(Product item){
+    public int getQuantity(Product item){
         return stock.get(item);
+    }
+
+    public void addStock(String name, int quantity){
+        Product item = getProductFromName(name);
+        int newQuantity = stock.get(item) + quantity;
+        
+        stock.put(item, newQuantity);
     }
 
     public void sellProduct(String name, int quantity){
@@ -439,6 +578,10 @@ class Store{
         Collections.sort(sorted, Product.brandComparator);
 
         return sorted;
+    }
+
+    public HashMap<Product, Integer> getStock(){
+        return stock;
     }
 
     public ArrayList<InEarMonitor> sortBySoundSignature(){
