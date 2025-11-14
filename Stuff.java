@@ -58,7 +58,6 @@ public class Stuff{
         Customer customer = new Customer(custName, custRank);
         Order currentOrder = new Order(customer, orderIDCounter);
 
-        customer.addOrder(currentOrder);
         orderIDCounter++;
 
         System.out.println("Hello " + customer.getName() + ", Welcome into the IEM store");
@@ -117,7 +116,7 @@ Choice:""");
                                 System.out.println(i + ". " + SoundSignature.values()[i-1]);
                             }
                             System.out.println("Choice:");
-                            
+
                             user = In.nextInt();
                             ArrayList<InEarMonitor> iemsSpecificSignature = iemStore.sortBySoundSignature(SoundSignature.values()[user - 1]);
 
@@ -315,13 +314,14 @@ Choice:""");
                             break;
                         }
                         
-                        System.out.println("Total Price after discount: " + totalAfterDiscount);
+                        System.out.println("Total Price after discount and Rank discount: " + totalAfterDiscount);
                         System.out.println("New Order Created");
 
                         currentOrder.setStatus(ShippingStatus.SHIPPED);
 
-                        currentOrder = new Order(customer, orderIDCounter);
                         customer.addOrder(currentOrder);
+                        currentOrder = new Order(customer, orderIDCounter);
+
                         orderIDCounter++;
                     break;   
                 case 5: 
@@ -394,7 +394,7 @@ Choice:""");
 
                             for (int i = 0; i < customer.getOrders().size(); i++){
                                 Order o = customer.getOrders().get(i);
-                                System.out.println(i + ": Order #" + o.getOrderID() + " | Status: " + o.getStatus());
+                                System.out.println(i + ": Order #" + o.getOrderID());
                             }
 
                             System.out.print("Select order: ");
@@ -479,6 +479,7 @@ interface Sellable{
 
 interface Discountable{
     double applyDiscount(double percentage);
+    double applyDiscount(int setAmount);
 }
 
 //classes
@@ -607,7 +608,8 @@ class Customer{
             return;
         }
         for (Order order : orders){
-            System.out.println("Order #" + order.getOrderID() + " | Status: " + order.getStatus());
+            System.out.println("Order #" + order.getOrderID());
+            System.out.println("Cart: " + order);
         }
     }
     
@@ -724,6 +726,8 @@ class Order implements Discountable{
 
         return total - (total * totalDiscount / 100);
     }
+
+    @Override
     // get the total price with discounts, with a set amount tho, like $50 off strictly
     public double applyDiscount(int setAmount){
         double total = 0;
@@ -741,10 +745,27 @@ class Order implements Discountable{
         
         return total;
     }
+    
+    public String getCartContent() {
+        String result = "";
+
+        if (cart.size() == 0) {
+            return "Cart is empty";
+        }
+
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+            Product p = entry.getKey();
+            int qty = entry.getValue();
+
+            result += p.getName() + " | Qty: " + qty + " | Price: $" + p.getPrice() + "\n";
+        }
+
+        return result;
+    }
 
     @Override
     public String toString(){
-        return "Order ID: " + orderID + "\nCustomer: " + cust.getName() + "\nStatus: " + status + "\nItems: " + cart.size() + "\nTotal: $" + getTotal();
+        return "Order ID: " + orderID + "\nCustomer: " + cust.getName() + "\nStatus: " + status + "\nItems: " + getCartContent() + "\nTotal: $" + getTotal();
     }
 }
 
