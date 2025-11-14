@@ -2,9 +2,62 @@ package IEM_Store;
 import java.util.*;
 
 public class Menu{
-    public static void main(String[] args){
-        Store iemStore = new Store();
+    Store iemStore = new Store();
+    Customer customer;
+    Order currentOrder;
+    int orderIDCounter = 0;
 
+    public static void main(String[] args){
+        Menu menu = new Menu();
+        menu.runStore();
+    }
+
+    void runStore(){
+        initProducts();
+        initCustomer();
+
+        boolean running = true;
+        while (running){
+            System.out.println("Main menu (Order #" + currentOrder.getOrderID() + ")");
+            System.out.println("""
+1. Browse Product
+2. Add item
+3. Manage cart
+4. Checkout
+5. Profile details and Total Orders
+6. Exit
+7. Inventory (staff only)
+Choice:""");
+
+            int user = In.nextInt();
+
+            switch (user){
+                case 1:
+                    browseMenu();
+                    break;
+                case 2:
+                    addItemMenu();
+                    break;
+                case 3:
+                    cartMenu();
+                    break;
+                case 4:
+                    checkoutMenu();
+                    break;
+                case 5:
+                    System.out.println(customer);
+                    customer.printOrders();
+                    break;
+                case 7:
+                    inventoryMenu();
+                    break;
+                default:
+                    running = false;
+            }
+        }
+    }
+
+    void initProducts(){
         InEarMonitor iem1 = new InEarMonitor("Moondrop Blessing 3", 319.99, new Driver[]{Driver.BA_DD_HYBRID, Driver.BA}, "Moondrop", SoundSignature.NEUTRAL);
         InEarMonitor iem2 = new InEarMonitor("TruthEar Hexa", 999.99, new Driver[]{Driver.TRIBID, Driver.BA_DD_HYBRID}, "TruthEar", SoundSignature.WARM_NEUTRAL);
         InEarMonitor iem3 = new InEarMonitor("7Hz Timeless", 219.99, new Driver[]{Driver.PLANAR, Driver.DYNAMIC}, "7Hz", SoundSignature.BRIGHT);
@@ -12,8 +65,8 @@ public class Menu{
         InEarMonitor iem5 = new InEarMonitor("Letshuoer S12", 119.00, new Driver[]{Driver.PLANAR}, "Letshuoer", SoundSignature.NEUTRAL);
         InEarMonitor iem6 = new InEarMonitor("Kiwi Ears Quintet", 219.00, new Driver[]{Driver.TRIBID, Driver.BA, Driver.DYNAMIC}, "Kiwi Ears", SoundSignature.WARM_NEUTRAL);
         InEarMonitor iem7 = new InEarMonitor("Tanchjim Oxygen", 269.00, new Driver[]{Driver.DYNAMIC}, "Tanchjim", SoundSignature.BRIGHT);
-        InEarMonitor iem8 = new InEarMonitor("Dunu SA6 MKII", 579.00, new Driver[]{Driver.BA}, "Dunu", SoundSignature.NEUTRAL);     
-        
+        InEarMonitor iem8 = new InEarMonitor("Dunu SA6 MKII", 579.00, new Driver[]{Driver.BA}, "Dunu", SoundSignature.NEUTRAL);
+
         CarryBag bag1 = new CarryBag("MoonDrop C2023", 59.99, "Moondrop", 10, 8, 5);
         CarryBag bag2 = new CarryBag("Tripowin Case", 19.99, "Tripowin", 7, 6, 3);
         CarryBag bag3 = new CarryBag("Dunu Pouch", 29.99, "Dunu", 8, 6, 4);
@@ -40,14 +93,14 @@ public class Menu{
         iemStore.addproduct(bag6, 15);
         iemStore.addproduct(bag7, 20);
         iemStore.addproduct(bag8, 35);
-        int orderIDCounter = 0;
+    }
 
+    void initCustomer(){
         System.out.println("Name: ");
         String custName = In.nextLine();
 
         System.out.println("What is your rank?");
         CustomerRank[] ranks = CustomerRank.values();
-
         for (int i = 0; i < ranks.length; i++){
             System.out.println((i + 1) + ". " + ranks[i]);
         }
@@ -55,31 +108,13 @@ public class Menu{
         int user = In.nextInt();
         CustomerRank custRank = CustomerRank.values()[user - 1];
 
-        Customer customer = new Customer(custName, custRank);
-        Order currentOrder = new Order(customer, orderIDCounter);
-
-        orderIDCounter++;
-
+        customer = new Customer(custName, custRank);
+        currentOrder = new Order(customer, orderIDCounter++);
         System.out.println("Hello " + customer.getName() + ", Welcome into the IEM store");
+    }
 
-        boolean running = true;
-
-        while (running){
-            System.out.println("Main menu (Order #" + currentOrder.getOrderID() + ")");
-            System.out.println("""
-1. Browse Product
-2. Add item
-3. Manage cart
-4. Checkout
-5. Profile details and Total Orders
-6. Exit
-7. Inventory (staff only)
-Choice:""");
-            user = In.nextInt();
-
-            switch (user){
-                case 1:
-                    System.out.println("""
+    void browseMenu(){
+        System.out.println("""
 Browse Menu:
 1. Show All products
 2. Show All IEMs, sorted by sound signature
@@ -89,342 +124,318 @@ Browse Menu:
 6. Show Carry Bags (Sorted by Volume)
 7. back
 Choice:""");
-            
-                    user=In.nextInt();
-                    
-                    switch (user){
-                        case 1:
-                            System.out.println("All Products:");
 
-                            for (Product item : iemStore.getStock().keySet()){
-                                System.out.println(item + "\nIn Stock: " + iemStore.getQuantity(item));
-                                System.out.println();
-                            }
+        int user = In.nextInt();
+
+        switch (user){
+            case 1:
+                System.out.println("All Products:");
+                for (Product item : iemStore.getStock().keySet()){
+                    System.out.println(item + "\nIn Stock: " + iemStore.getQuantity(item));
+                    System.out.println();
+                }
+                break;
+
+            case 2:
+                ArrayList<InEarMonitor> iemsBroadSignature = iemStore.sortBySoundSignature();
+                for (InEarMonitor iem : iemsBroadSignature){
+                    System.out.println(iem + "\nIn Stock: " + iemStore.getQuantity(iem));
+                    System.out.println();
+                }
+                break;
+
+            case 3:
+                System.out.println("Which sound Signature");
+                for (int i = 1; i <= SoundSignature.values().length; i++){
+                    System.out.println(i + ". " + SoundSignature.values()[i - 1]);
+                }
+                System.out.println("Choice:");
+                user = In.nextInt();
+                ArrayList<InEarMonitor> iemsSpecificSignature = iemStore.sortBySoundSignature(SoundSignature.values()[user - 1]);
+                for (InEarMonitor iem : iemsSpecificSignature){
+                    System.out.println(iem + "\nIn stock: " + iemStore.getQuantity(iem));
+                    System.out.println();
+                }
+                break;
+
+            case 4:
+                ArrayList<Product> itemBroadBrand = iemStore.sortByBrand();
+                for (Product item : itemBroadBrand){
+                    System.out.println(item + "\nIn stock: " + iemStore.getQuantity(item));
+                    System.out.println();
+                }
+                break;
+
+            case 5:
+                ArrayList<String> brandList = new ArrayList<>();
+                for (Product item : iemStore.getStock().keySet()){
+                    String brand = item.getBrand();
+                    boolean exists = false;
+                    for (String b : brandList){
+                        if (b.equalsIgnoreCase(brand)){
+                            exists = true;
                             break;
-                        case 2:
-                            ArrayList<InEarMonitor> iemsBroadSignature = iemStore.sortBySoundSignature();
-
-                            for (InEarMonitor iem : iemsBroadSignature){
-                                System.out.println(iem + "\nIn Stock: " + iemStore.getQuantity(iem));
-                                System.out.println();
-                            }
-                            break;
-                        case 3:
-                            System.out.println("Which sound Signature");
-                            
-                            for (int i = 1; i < (SoundSignature.values()).length + 1; i++){
-                                System.out.println(i + ". " + SoundSignature.values()[i-1]);
-                            }
-                            System.out.println("Choice:");
-
-                            user = In.nextInt();
-                            ArrayList<InEarMonitor> iemsSpecificSignature = iemStore.sortBySoundSignature(SoundSignature.values()[user - 1]);
-
-                            for (InEarMonitor iem : iemsSpecificSignature){
-                                System.out.println(iem + "\nIn stock: " + iemStore.getQuantity(iem));
-                                System.out.println();
-                            }
-                            break;
-                        case 4:
-                            ArrayList<Product> itemBroadBrand = iemStore.sortByBrand();
-
-                            for (Product item : itemBroadBrand){
-                                System.out.println(item + "\nIn stock: " + iemStore.getQuantity(item));
-                                System.out.println();
-                            }
-
-                            break;
-                        case 5:
-                            ArrayList<String> brandList = new ArrayList<>();
-
-                                for (Product item : iemStore.getStock().keySet()){
-                                    String brand = item.getBrand();
-                                    boolean exists = false;
-
-                                    for (String b : brandList){
-                                        if (b.equalsIgnoreCase(brand)){
-                                            exists = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!exists){
-                                        brandList.add(brand);
-                                    }
-                                }
-
-                                System.out.println("Select Brand:");
-                                for (int i = 0; i < brandList.size(); i++){
-                                    System.out.println((i + 1) + ". " + brandList.get(i));
-                                }
-                                System.out.println("Choice:");
-
-                                user = In.nextInt();
-                                String selectedBrand = brandList.get(user - 1);
-
-                                ArrayList<Product> filteredProducts = iemStore.sortByBrand(selectedBrand);
-
-                                for (Product item : filteredProducts){
-                                    System.out.println(item + "\nStock: " + iemStore.getQuantity(item));
-                                    System.out.println();
-                                }
-
-                                break;
-                        case 6:
-                            ArrayList<CarryBag> sortedBags = iemStore.sortByVolume();
-
-                            for (CarryBag bag : sortedBags){
-                                System.out.println(bag + "\nStock: " + iemStore.getQuantity(bag));
-                                System.out.println();
-                            }
-                            break;
-                        default:
-                            break;
+                        }
                     }
-                    break;
-                    
-                    case 2:
-                        ArrayList<Product> products = new ArrayList<>(iemStore.getStock().keySet());
+                    if (!exists) brandList.add(brand);
+                }
+                System.out.println("Select Brand:");
+                for (int i = 0; i < brandList.size(); i++){
+                    System.out.println((i + 1) + ". " + brandList.get(i));
+                }
+                System.out.println("Choice:");
+                user = In.nextInt();
+                String selectedBrand = brandList.get(user - 1);
+                ArrayList<Product> filteredProducts = iemStore.sortByBrand(selectedBrand);
+                for (Product item : filteredProducts){
+                    System.out.println(item + "\nStock: " + iemStore.getQuantity(item));
+                    System.out.println();
+                }
+                break;
 
-                        for (int i = 0; i < products.size(); i++){
-                            Product item = products.get(i);
-                            System.out.println((i + 1) + ". " + item.getName() + " | $" + item.getPrice() + " | Stock: " + iemStore.getQuantity(item));
-                        }
+            case 6:
+                ArrayList<CarryBag> sortedBags = iemStore.sortByVolume();
+                for (CarryBag bag : sortedBags){
+                    System.out.println(bag + "\nStock: " + iemStore.getQuantity(bag));
+                    System.out.println();
+                }
+                break;
 
-                        System.out.print("Select item number: ");
-                        user = In.nextInt();
+            default:
+                break;
+        }
+    }
 
-                        if (user <= 0 || user > products.size()){
-                            System.out.println("Invalid choice");
-                            break;
-                        }
+    void addItemMenu(){
+        ArrayList<Product> products = new ArrayList<>(iemStore.getStock().keySet());
 
-                        Product selected = products.get(user - 1);
+        for (int i = 0; i < products.size(); i++){
+            Product item = products.get(i);
+            System.out.println((i + 1) + ". " + item.getName() + " | $" + item.getPrice() + " | Stock: " + iemStore.getQuantity(item));
+        }
 
-                        System.out.print("Quantity: ");
-                        int quantitytoAdd = In.nextInt();
+        System.out.print("Select item number: ");
+        int user = In.nextInt();
 
-                        if (quantitytoAdd <= 0 || quantitytoAdd > iemStore.getQuantity(selected)){
-                            System.out.println("Invalid quantity");
-                            break;
-                        }
+        if (user <= 0 || user > products.size()){
+            System.out.println("Invalid choice");
+            return;
+        }
 
-                        currentOrder.addProduct(selected, quantitytoAdd);
-                        iemStore.sellProduct(selected.getName(), quantitytoAdd);
+        Product selected = products.get(user - 1);
 
-                        System.out.println("Added " + quantitytoAdd + " of " + selected.getName());
-                        break;
+        System.out.print("Quantity: ");
+        int quantitytoAdd = In.nextInt();
 
-                    case 3:
-                        System.out.println("""
+        if (quantitytoAdd <= 0 || quantitytoAdd > iemStore.getQuantity(selected)){
+            System.out.println("Invalid quantity");
+            return;
+        }
+
+        currentOrder.addProduct(selected, quantitytoAdd);
+        iemStore.sellProduct(selected.getName(), quantitytoAdd);
+
+        System.out.println("Added " + quantitytoAdd + " of " + selected.getName());
+    }
+
+    void cartMenu(){
+        System.out.println("""
 Cart Menu:
 1. View cart
 2. Remove product
 3. Clear cart
 4. Go back
 Choice:""");
-                        user = In.nextInt();
+        int user = In.nextInt();
 
-                        switch (user){
-                            case 1:
-                                currentOrder.printCart();
-                                break;
-                            
-                            case 2:
-                                if (currentOrder.getCart().size() == 0){
-                                    System.out.println("Cart is empty");
-                                    break;
-                                }
+        switch (user){
+            case 1:
+                currentOrder.printCart();
+                break;
 
-                                System.out.println("Which product to remove?");
-                                currentOrder.printCart();
-
-                                user =In.nextInt();
-
-                                if (user <= 0 || (user - 1) >= currentOrder.getCart().size()){
-                                    System.out.println("Invalid option");
-                                    break;
-                                }
-                                int index = 1;
-                                Product selectedProduct = null;
-
-                                for (Map.Entry<Product, Integer> entry : currentOrder.getCart().entrySet()){
-                                    if (index == user){
-                                        selectedProduct = entry.getKey();
-                                        break;
-                                    }
-                                    index++;
-                                }
-
-                                if (selectedProduct == null){
-                                    System.out.println("Product not found");
-                                    break;
-                                }
-
-                                System.out.println("Enter quantity to remove:");
-                                user = In.nextInt();
-
-                                if (user <= 0){
-                                    System.out.println("Invalid quantity");
-                                    break;
-                                }
-
-                                currentOrder.removeProduct(selectedProduct, user);
-                                iemStore.addStock(selectedProduct.getName(), user);
-                                break;
-
-                            case 3:
-                                currentOrder.clearCart();
-                                break;
-                            
-                            default:
-                                break;
-                        }
+            case 2:
+                if (currentOrder.getCart().size() == 0){
+                    System.out.println("Cart is empty");
                     break;
+                }
 
-                    case 4:
-                        if (currentOrder.getCart().size() == 0){
-                            System.out.println("Your cart is empty");
-                            break;
-                        }
-                        System.out.println("Cart:");
-                        currentOrder.printCart();
-                        System.out.println("Total before discount; " + currentOrder.getTotal());
-                        
-                        System.out.println("""
+                System.out.println("Which product to remove?");
+                currentOrder.printCart();
+
+                user = In.nextInt();
+
+                if (user <= 0 || (user - 1) >= currentOrder.getCart().size()){
+                    System.out.println("Invalid option");
+                    break;
+                }
+                int index = 1;
+                Product selectedProduct = null;
+
+                for (Map.Entry<Product, Integer> entry : currentOrder.getCart().entrySet()){
+                    if (index == user){
+                        selectedProduct = entry.getKey();
+                        break;
+                    }
+                    index++;
+                }
+
+                if (selectedProduct == null){
+                    System.out.println("Product not found");
+                    break;
+                }
+
+                System.out.println("Enter quantity to remove:");
+                user = In.nextInt();
+
+                if (user <= 0){
+                    System.out.println("Invalid quantity");
+                    break;
+                }
+
+                currentOrder.removeProduct(selectedProduct, user);
+                iemStore.addStock(selectedProduct.getName(), user);
+                break;
+
+            case 3:
+                currentOrder.clearCart();
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void checkoutMenu(){
+        if (currentOrder.getCart().size() == 0){
+            System.out.println("Your cart is empty");
+            return;
+        }
+        System.out.println("Cart:");
+        currentOrder.printCart();
+        System.out.println("Total before discount; " + currentOrder.getTotal());
+
+        System.out.println("""
 Discount Options:
 1. Apply percentage discount
 2. Apply set amount
 3. Go back
 Choice:""");
-                        double totalAfterDiscount = 0;
-                        user = In.nextInt();
-                        
-                        switch (user){
-                            case 1:
-                                System.out.println("How many % ?");
-                                double percentageDisc = In.nextInt();
-                                totalAfterDiscount = currentOrder.applyDiscount(percentageDisc);
-                                break;
-                            case 2:
-                                System.out.println("How much $?");
-                                int setAmountDisc = In.nextInt();
-                                totalAfterDiscount = currentOrder.applyDiscount(setAmountDisc);
-                                break;
-                            default:
-                            break;
-                        }
-                        
-                        System.out.println("Total Price after discount and Rank discount: " + totalAfterDiscount);
-                        System.out.println("New Order Created");
+        double totalAfterDiscount = 0;
+        int user = In.nextInt();
 
-                        currentOrder.setStatus(ShippingStatus.SHIPPED);
+        switch (user){
+            case 1:
+                System.out.println("How many % ?");
+                double percentageDisc = In.nextInt();
+                totalAfterDiscount = currentOrder.applyDiscount(percentageDisc);
+                break;
+            case 2:
+                System.out.println("How much $?");
+                int setAmountDisc = In.nextInt();
+                totalAfterDiscount = currentOrder.applyDiscount(setAmountDisc);
+                break;
+            default:
+                break;
+        }
 
-                        customer.addOrder(currentOrder);
-                        currentOrder = new Order(customer, orderIDCounter);
+        System.out.println("Total Price after discount and Rank discount: " + totalAfterDiscount);
+        System.out.println("New Order Created");
 
-                        orderIDCounter++;
-                    break;   
-                case 5: 
-                    System.out.println(customer);
-                    customer.printOrders();
-                    break;
-                case 7:
-                    System.out.println("""
+        currentOrder.setStatus(ShippingStatus.SHIPPED);
+
+        customer.addOrder(currentOrder);
+        currentOrder = new Order(customer, orderIDCounter++);
+    }
+
+    void inventoryMenu(){
+        System.out.println("""
 Inventory Menu:
 1. Add Stock
 2. Remove Stock
 3. Update Shipping Status
 4. Back
 Choice:""");
-                    user = In.nextInt();
+        int user = In.nextInt();
 
-                    switch (user){
+        switch (user){
+            case 1:
+                ArrayList<Product> stockList1 = new ArrayList<>(iemStore.getStock().keySet());
+                for (int i = 0; i < stockList1.size(); i++){
+                    Product item = stockList1.get(i);
+                    System.out.println((i + 1) + ". " + item.getName() + "\nIn Stock: " + iemStore.getQuantity(item));
+                    System.out.println();
+                }
 
-                        case 1:
-                            ArrayList<Product> stockList1 = new ArrayList<>(iemStore.getStock().keySet());
-                            for (int i = 0; i < stockList1.size(); i++){
-                                Product item = stockList1.get(i);
-                                System.out.println((i + 1) + ". " + item.getName() + "\nIn Stock: " + iemStore.getQuantity(item));
-                                System.out.println();
-                            }
-
-                            System.out.print("Select product: ");
-                            user = In.nextInt();
-                            if (user <= 0 || user > stockList1.size()){
-                                break;
-                            }
-                            Product addP = stockList1.get(user - 1);
-
-                            System.out.print("Amount to add: ");
-                            user = In.nextInt();
-                            iemStore.addStock(addP.getName(), user);
-
-                            System.out.println("Updated stock for " + addP.getName());
-                            break;
-
-
-                        case 2:
-                            ArrayList<Product> stockList2 = new ArrayList<>(iemStore.getStock().keySet());
-                            for (int i = 0; i < stockList2.size(); i++){
-                                Product item = stockList2.get(i);
-                                System.out.println((i + 1) + ". " + item.getName() + "\nIn Stock: " + iemStore.getQuantity(item));
-                                System.out.println();
-                            }
-
-                            System.out.print("Select product: ");
-                            user = In.nextInt();
-                            if (user <= 0 || user > stockList2.size()){
-                                break;
-                            }
-                            Product remP = stockList2.get(user - 1);
-
-                            System.out.print("Amount to remove: ");
-                            user = In.nextInt();
-                            iemStore.sellProduct(remP.getName(), user);
-
-                            System.out.println("Updated stock for " + remP.getName());
-                            break;
-
-
-                        case 3:
-                            if (customer.getOrders().size() == 0){
-                                System.out.println("No orders.");
-                                break;
-                            }
-
-                            for (int i = 0; i < customer.getOrders().size(); i++){
-                                Order o = customer.getOrders().get(i);
-                                System.out.println(i + ": Order #" + o.getOrderID());
-                            }
-
-                            System.out.print("Select order: ");
-                            user = In.nextInt();
-                            if (user < 0 || user >= customer.getOrders().size()) break;
-                            int orderIdx = user;
-
-                            ShippingStatus[] s = ShippingStatus.values();
-                            for (int i = 0; i < s.length; i++){
-                                System.out.println(i + ": " + s[i]);
-                            }
-
-                            System.out.print("Select new status: ");
-                            user = In.nextInt();
-                            if (user < 0 || user >= s.length) break;
-
-                            customer.getOrders().get(orderIdx).setStatus(s[user]);
-                            System.out.println("Status updated.");
-                            break;
-
-                        default:
-                            break;
-                    }
+                System.out.print("Select product: ");
+                user = In.nextInt();
+                if (user <= 0 || user > stockList1.size()){
                     break;
+                }
+                Product addP = stockList1.get(user - 1);
 
-                    default:
-                    running = false;
-            }
+                System.out.print("Amount to add: ");
+                user = In.nextInt();
+                iemStore.addStock(addP.getName(), user);
+
+                System.out.println("Updated stock for " + addP.getName());
+                break;
+
+            case 2:
+                ArrayList<Product> stockList2 = new ArrayList<>(iemStore.getStock().keySet());
+                for (int i = 0; i < stockList2.size(); i++){
+                    Product item = stockList2.get(i);
+                    System.out.println((i + 1) + ". " + item.getName() + "\nIn Stock: " + iemStore.getQuantity(item));
+                    System.out.println();
+                }
+
+                System.out.print("Select product: ");
+                user = In.nextInt();
+                if (user <= 0 || user > stockList2.size()){}
+                Product remP = stockList2.get(user - 1);
+
+                System.out.print("Amount to remove: ");
+                user = In.nextInt();
+                iemStore.sellProduct(remP.getName(), user);
+
+                System.out.println("Updated stock for " + remP.getName());
+                break;
+
+            case 3:
+                if (customer.getOrders().size() == 0){
+                    System.out.println("No orders.");
+                    break;
+                }
+
+                for (int i = 0; i < customer.getOrders().size(); i++){
+                    Order o = customer.getOrders().get(i);
+                    System.out.println(i + ": Order #" + o.getOrderID());
+                }
+
+                System.out.print("Select order: ");
+                user = In.nextInt();
+                if (user < 0 || user >= customer.getOrders().size()){
+                    break;
+                }
+                int orderIdx = user;
+
+                ShippingStatus[] s = ShippingStatus.values();
+                for (int i = 0; i < s.length; i++){
+                    System.out.println(i + ": " + s[i]);
+                }
+
+                System.out.print("Select new status: ");
+                user = In.nextInt();
+                if (user < 0 || user >= s.length){
+                    break;
+                }
+
+                customer.getOrders().get(orderIdx).setStatus(s[user]);
+                System.out.println("Status updated.");
+                break;
+
+            default:
+                break;
         }
-
     }
 }
 
@@ -746,14 +757,14 @@ class Order implements Discountable{
         return total;
     }
     
-    public String getCartContent() {
+    public String getCartContent(){
         String result = "";
 
-        if (cart.size() == 0) {
+        if (cart.size() == 0){
             return "Cart is empty";
         }
 
-        for (Map.Entry<Product, Integer> entry : cart.entrySet()) {
+        for (Map.Entry<Product, Integer> entry : cart.entrySet()){
             Product p = entry.getKey();
             int qty = entry.getValue();
 
