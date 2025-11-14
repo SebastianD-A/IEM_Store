@@ -557,10 +557,7 @@ class InEarMonitor extends Product{
 
     @Override
     public String toString(){
-        return super.toString() + 
-        "\nSound Signatures: " + 
-        this.soundSignature + 
-        "\nDrivers: " + getDrivers();
+        return super.toString() + "\nSound Signatures: " + this.soundSignature + "\nDrivers: " + getDrivers();
     }
 }
 
